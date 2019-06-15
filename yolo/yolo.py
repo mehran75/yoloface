@@ -25,7 +25,7 @@ from PIL import ImageDraw, Image
 
 
 class YOLO(object):
-    def __init__(self, args):
+    def __init__(self, args, directory=None):
         self.args = args
         self.model_path = args.model
         self.classes_path = args.classes
@@ -35,6 +35,14 @@ class YOLO(object):
         self.sess = K.get_session()
         self.boxes, self.scores, self.classes = self._generate()
         self.model_image_size = args.img_size
+        self.directory = directory
+        if directory:
+            self.use_directory = True
+        else:
+            self.use_directory = False
+
+
+
 
     def _get_class(self):
         classes_path = os.path.expanduser(self.classes_path)
@@ -92,6 +100,11 @@ class YOLO(object):
                                            score_threshold=self.args.score,
                                            iou_threshold=self.args.iou)
         return boxes, scores, classes
+
+    def detect_image_from_directory(self):
+        for img in os.listdir(self.directory):
+            image, boxes = self.detect_image(Image.open(img))
+            print('boxes : {} '.format(boxes))
 
     def detect_image(self, image):
         start_time = timer()
@@ -181,6 +194,11 @@ def detect_img(yolo):
             res_image, _ = yolo.detect_image(image)
             res_image.show()
     yolo.close_session()
+
+
+
+
+
 
 
 def detect_video(model, video_path=None, output=None):
